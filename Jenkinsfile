@@ -31,7 +31,7 @@ pipeline {
             steps {
                 script{
                     withKubeConfig(caCertificate: '', clusterName: 'eks-cluster', contextName: '', credentialsId: 'k8-token', namespace: 'webapps', restrictKubeConfigAccess: false, serverUrl: 'https://04B476509F5549E80CF3A83B02F281E1.gr7.us-west-2.eks.amazonaws.com') {
-                    sh 'kubectl apply -f deployment.yml -n webapps'
+                    sh 'kubectl apply -f deployment.yaml -n webapps'
                     sleep 30
                         
                     }
