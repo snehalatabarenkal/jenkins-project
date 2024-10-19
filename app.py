@@ -3,4 +3,4 @@ app = Flask(__name__)
 
 @app.route('/')
 def hello_world():
-    return 'This is DevOps Batch!!!'
+    return 'This is DevOps Batch 2024!!!'
