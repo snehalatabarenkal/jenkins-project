@@ -30,17 +30,15 @@ pipeline {
         stage('Deploy to k8s') {
             steps {
                 script{
-                    sh 'kubectl apply -f deployment.yaml'
+                    withKubeConfig(caCertificate: '', clusterName: 'eks-cluster', contextName: '', credentialsId: 'k8-token', namespace: 'webapps', restrictKubeConfigAccess: false, serverUrl: 'https://04B476509F5549E80CF3A83B02F281E1.gr7.us-west-2.eks.amazonaws.com') {
+                    sh 'kubectl apply -f deployment.yml -n webapps'
+                    sleep 30
+                        
+                    }
                 }
             }
         }
         
-
-
-
-
-
-
     }
 }
 
