@@ -1,9 +1,30 @@
 pipeline {
     agent any
+
+    environment {
+        SCANNER_HOME= tool 'sonar'
+    }
+
     stages {
         stage('git checkout') {
             steps {
                 git branch: 'main', url: 'https://github.com/anjalikota10/jenkins-project.git'
+            }
+        }
+
+        stage('Trivy FS Scan') {
+            steps {
+                sh 'trivy fs --format table -o fs-report.html .'
+            }
+        }
+
+        stage('SonarQube Analysis') {
+            steps {
+                withSonarQubeEnv('sonar') {  
+                    sh ''' $SCANNER_HOME/bin/sonar-scanner -Dsonar.projectKey=flaskdemo \
+                    -Dsonar.projectName=flaskdemo -Dsonar.java.binaries=target '''
+                    
+                 }    
             }
         }
 
@@ -16,6 +37,7 @@ pipeline {
                 }
             }
         }
+
 
         stage('Push docker image') {
             steps {
