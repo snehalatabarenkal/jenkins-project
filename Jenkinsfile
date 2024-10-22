@@ -14,8 +14,10 @@ pipeline {
 
         stage('Trivy FS Scan') {
             steps {
-                sh 'trivy fs --format table -o fs-report.html .'
-            }
+                for i in {1..5}; do
+                trivy fs --format table -o fs-report.html . && break || sleep 30;
+                    done
+             }
         }
 
         stage('SonarQube Analysis') {
