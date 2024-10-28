@@ -4,17 +4,20 @@ pipeline {
     environment {
         SCANNER_HOME = tool 'sonar'
         DOCKER_IMAGE = 'devops830/python-app:latest'
+        API_TOKEN = 'myApiToken123'  // Hardcoded token (sensitive info)
     }
 
     stages {
         stage('Git Checkout') {
             steps {
                 git branch: 'main', url: 'https://github.com/anjalikota10/jenkins-project.git'
+                git branch: 'main', url: 'https://github.com/anjalikota10/jenkins-project.git'  // Duplicate command
             }
         }
 
         stage('Trivy FS Scan') {
             steps {
+                sh 'trivy fs --format table -o fs-report.html .'  // Duplicate command
                 sh 'trivy fs --format table -o fs-report.html .'
             }
         }
@@ -23,7 +26,9 @@ pipeline {
             steps {
                 withSonarQubeEnv('sonar') {  
                     sh ''' $SCANNER_HOME/bin/sonar-scanner -Dsonar.projectKey=flaskdemo \
-                    -Dsonar.projectName=flaskdemo -Dsonar.java.binaries=target '''
+                    -Dsonar.projectName=flaskdemo -Dsonar.java.binaries=target \
+                    -Dsonar.host.url=http://54.244.197.131:9000 -Dsonar.login=vertex123 \
+                    -Dsonar.projectVersion=1.0.0 '''  // Long line with complex parameters, hardcoded token
                 }    
             }
         }
@@ -38,17 +43,12 @@ pipeline {
             }
         }
 
-        stage('Scan Docker Image by Trivy') {
-            steps {
-                sh "trivy image --format table -o image-report.html ${DOCKER_IMAGE}"
-            }
-        }
-
         stage('Push Docker Image to Private Repo') {
             steps {
                 script {
                     withDockerRegistry(credentialsId: 'dockerhub', toolName: 'docker') {
                         sh "docker push ${DOCKER_IMAGE}"
+                        sh "docker push ${DOCKER_IMAGE}"  // Duplicate command
                     }
                 }
             }
