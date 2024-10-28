@@ -66,11 +66,6 @@ pipeline {
             }
         }
 
-        stage('Long Line Without Comment') {
-            steps {
-                sh "echo $(date) && echo $(date) && echo $(date) && echo $(date) && echo $(date)" // Long, unreadable line
-            }
-        }
     }
 }
     
