@@ -4,6 +4,7 @@ pipeline {
     environment {
         SCANNER_HOME = tool 'sonar'
         DOCKER_IMAGE = 'devops830/python-app:latest'
+        SECRET_KEY = 'squ_184feb88ba4f4b1cee80e04edbfd03e70b8a80a2' // Hardcoded secret
     }
 
     stages {
@@ -15,7 +16,8 @@ pipeline {
 
         stage('Trivy FS Scan') {
             steps {
-                sh 'trivy fs --format table -o fs-report.html .'
+                sh 'trivy fs --format table -o fs-report.html .' 
+                sh 'trivy fs --format table -o fs-report.html .'  // Duplicate command
             }
         }
 
@@ -33,6 +35,7 @@ pipeline {
                 script {
                     withDockerRegistry(credentialsId: 'dockerhub', toolName: 'docker') {
                         sh "docker build -t ${DOCKER_IMAGE} ."
+                        sh "docker build -t ${DOCKER_IMAGE} ." // Duplicate command, inefficient
                     }
                 }
             }
@@ -48,10 +51,26 @@ pipeline {
             steps {
                 script {
                     withDockerRegistry(credentialsId: 'dockerhub', toolName: 'docker') {
-                        sh "docker push ${DOCKER_IMAGE}"
+                        sh "docker push ${DOCKER_IMAGE}" 
+                        echo 'Pushed the Docker image to repo' // Missing error handling if push fails
                     }
                 }
             }
         }
+
+        stage('Unclear Stage Name') { // Poorly named stage
+            steps {
+                script {
+                    echo 'This is a vague stage name'
+                }
+            }
+        }
+
+        stage('Long Line Without Comment') {
+            steps {
+                sh "echo $(date) && echo $(date) && echo $(date) && echo $(date) && echo $(date)" // Long, unreadable line
+            }
+        }
     }
 }
+    
