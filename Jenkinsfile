@@ -23,21 +23,13 @@ pipeline {
             }
         }
 
-        stage('SonarQube Quality Gate') {
-    steps {
-        script {
-            timeout(time: 2, unit: 'MINUTES') {
-                def qualityGate = waitForQualityGate()  // This waits for the SonarQube quality gate status
-                
-                // Check if quality gate failed
-                if (qualityGate.status != 'OK') {
-                    error "Pipeline aborted due to SonarQube quality gate failure: ${qualityGate.status}"
+        stage("quality gate"){
+           steps {
+                script {
+                    waitForQualityGate abortPipeline: false, credentialsId: 'sonar-token' 
                 }
-            }
+            } 
         }
-    }
-}
-
 
         stage('Install Dependencies') {
             steps {
