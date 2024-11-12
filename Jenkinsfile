@@ -13,27 +13,28 @@ pipeline {
             }
         }
 
-
         stage('SonarQube Analysis') {
             steps {
                 withSonarQubeEnv('sonar') {  
-                    sh ''' $SCANNER_HOME/bin/sonar-scanner -Dsonar.projectKey=flaskdemo \
-                    -Dsonar.projectName=flaskdemo -Dsonar.java.binaries=target '''
+                    sh '''
+                    $SCANNER_HOME/bin/sonar-scanner \
+                    -Dsonar.projectKey=flaskdemo \
+                    -Dsonar.projectName=flaskdemo
+                    '''
                 }    
             }
         }
 
         stage('SonarQube Quality Gate') {
-    steps {
-        script {
-            def qualityGate = waitForQualityGate(timeout: 120)  // Set timeout in seconds (e.g., 2 minutes) 
-            if (qualityGate.status != 'OK') {
-                error "Pipeline aborted due to SonarQube quality gate failure: ${qualityGate.status}"
+            steps {
+                script {
+                    def qualityGate = waitForQualityGate() // Using default timeout
+                    if (qualityGate.status != 'OK') {
+                        error "Pipeline aborted due to SonarQube quality gate failure: ${qualityGate.status}"
+                    }
+                }
             }
         }
-    }
-}
-
 
         stage('Install Dependencies') {
             steps {
@@ -44,7 +45,9 @@ pipeline {
         stage('Trivy Filesystem Scan') {
             steps {
                 // Runs a Trivy FS scan on the local filesystem to detect any vulnerabilities
-                sh 'trivy fs . --exit-code 1 --severity HIGH,CRITICAL --output trivy-fs-report.txt'
+                sh '''
+                trivy fs . --exit-code 1 --severity HIGH,CRITICAL --output trivy-fs-report.txt
+                '''
             }
         }
 
@@ -61,7 +64,9 @@ pipeline {
         stage('Trivy Image Scan') {
             steps {
                 // Runs a Trivy scan on the Docker image to check for vulnerabilities in the image layers
-                sh 'trivy image ${DOCKER_IMAGE} --exit-code 1 --severity HIGH,CRITICAL --output trivy-image-report.txt'
+                sh '''
+                trivy image ${DOCKER_IMAGE} --exit-code 1 --severity HIGH,CRITICAL --output trivy-image-report.txt
+                '''
             }
         }
 
