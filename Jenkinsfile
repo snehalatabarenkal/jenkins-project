@@ -26,15 +26,18 @@ pipeline {
         }
 
         stage('SonarQube Quality Gate') {
-            steps {
-                script {
-                    def qualityGate = waitForQualityGate() // Using default timeout
-                    if (qualityGate.status != 'OK') {
-                        error "Pipeline aborted due to SonarQube quality gate failure: ${qualityGate.status}"
-                    }
+    steps {
+        script {
+            timeout(time: 5, unit: 'MINUTES') { // Adjust timeout as needed
+                def qualityGate = waitForQualityGate()
+                if (qualityGate.status != 'OK') {
+                    error "Pipeline aborted due to SonarQube quality gate failure: ${qualityGate.status}"
                 }
             }
         }
+    }
+}
+
 
         stage('Install Dependencies') {
             steps {
