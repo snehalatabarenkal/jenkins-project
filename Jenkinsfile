@@ -28,15 +28,24 @@ pipeline {
         stage('SonarQube Quality Gate') {
     steps {
         script {
-            timeout(time: 10, unit: 'MINUTES') { // Adjust timeout as needed
-                def qualityGate = waitForQualityGate()
-                if (qualityGate.status != 'OK') {
-                    error "Pipeline aborted due to SonarQube quality gate failure: ${qualityGate.status}"
-                }
+            def sonarProjectKey = 'flaskdemo'  // Replace with your SonarQube project key
+            def sonarAuthToken = credentials('sonar-token')  // Use your SonarQube token credential ID
+            
+            def qualityGateStatus = sh(
+                script: """
+                    curl -s -u ${sonarAuthToken}: "http://54.187.233.74:9000//api/qualitygates/project_status?projectKey=${sonarProjectKey}" \
+                    | jq -r '.projectStatus.status'
+                """,
+                returnStdout: true
+            ).trim()
+            
+            if (qualityGateStatus != 'OK') {
+                error "Pipeline aborted due to SonarQube quality gate failure: ${qualityGateStatus}"
             }
         }
     }
 }
+
 
 
         stage('Install Dependencies') {
