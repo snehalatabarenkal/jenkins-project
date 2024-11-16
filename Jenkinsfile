@@ -26,13 +26,14 @@ pipeline {
         }
 
         stage('Trivy Filesystem Scan') {
-            steps {
-                // Runs a Trivy FS scan on the local filesystem to detect any vulnerabilities
-                sh '''
-                trivy fs . --exit-code 1 --severity HIGH,CRITICAL --output trivy-fs-report.txt
-                '''
-            }
-        }
+    steps {
+        sh '''
+        export PATH=$PATH:/usr/bin
+        trivy fs . --exit-code 1 --severity HIGH,CRITICAL --output trivy-fs-report.txt
+        '''
+    }
+}
+
 
         stage('Build & Tag Docker Image') {
             steps {
