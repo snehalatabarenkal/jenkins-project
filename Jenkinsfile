@@ -28,7 +28,7 @@ pipeline {
         stage('Trivy Filesystem Scan') {
     steps {
         sh '''
-        export PATH=$PATH:/usr/bin
+        export PATH=$PATH:/usr/bin/trivy
         trivy fs . --exit-code 1 --severity HIGH,CRITICAL --output trivy-fs-report.txt
         '''
     }
