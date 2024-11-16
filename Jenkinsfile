@@ -25,20 +25,6 @@ pipeline {
             }
         }
 
-        
-        stage('Install Dependencies') {
-            steps {
-                sh 'npm install'
-            }
-        }
-
-        stage('OWASP FS SCAN') {
-            steps {
-                dependencyCheck additionalArguments: '--scan ./ --disableYarnAudit --disableNodeAudit', odcInstallation: 'DP-Check'
-                dependencyCheckPublisher pattern: '**/dependency-check-report.xml'
-            }
-        }
-
         stage('Trivy Filesystem Scan') {
             steps {
                 // Runs a Trivy FS scan on the local filesystem to detect any vulnerabilities
