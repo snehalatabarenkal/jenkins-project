@@ -1,5 +1,6 @@
+@Library('shared')
 pipeline {
-    agent any
+    agent any{label 'node'}
 
     environment {
         SCANNER_HOME = tool 'sonar'
@@ -7,33 +8,54 @@ pipeline {
     }
 
     stages {
-        stage('Git Checkout') {
-            steps {
-                git branch: 'main', url: 'https://github.com/anjalikota10/jenkins-project.git'
+
+        stage("Workspace cleanup"){
+            steps{
+                script{
+                    cleanWs()
+                }
             }
         }
 
-        stage('SonarQube Analysis') {
+        stage('Git: Code Checkout') {
             steps {
-                withSonarQubeEnv('sonar') {  
-                    sh '''
-                    $SCANNER_HOME/bin/sonar-scanner \
-                    -Dsonar.projectKey=flaskdemo \
-                    -Dsonar.projectName=flaskdemo
-                    '''
-                }    
+                script{
+                    code_checkout("https://github.com/anjalikota10/jenkins-project.git","main")
+                }
             }
         }
 
-        stage('Trivy Filesystem Scan') {
-    steps {
-        sh '''
-        export PATH=$PATH:/usr/bin/trivy
-        trivy fs . --exit-code 1 --severity HIGH,CRITICAL --output trivy-fs-report.txt
-        '''
-    }
-}
+        stage("Trivy: Filesystem scan"){
+            steps{
+                script{
+                    trivy_scan()
+                }
+            }
+        }
 
+        stage("OWASP: Dependency check"){
+            steps{
+                script{
+                    owasp_dependency()
+                }
+            }
+        }
+
+        stage("SonarQube: Code Analysis"){
+            steps{
+                script{
+                    sonarqube_analysis("sonar","flaskdemo","flaskdemo")
+                }
+            }
+        }
+
+        stage("SonarQube: Code Quality Gates"){
+            steps{
+                script{
+                    sonarqube_code_quality()
+                }
+            }
+        }
 
         stage('Build & Tag Docker Image') {
             steps {
@@ -45,12 +67,9 @@ pipeline {
             }
         }
 
-        stage('Trivy Image Scan') {
+        stage('Scan Docker Image by Trivy') {
             steps {
-                // Runs a Trivy scan on the Docker image to check for vulnerabilities in the image layers
-                sh '''
-                trivy image ${DOCKER_IMAGE} --exit-code 1 --severity HIGH,CRITICAL --output trivy-image-report.txt
-                '''
+                sh "trivy image --format table -o image-report.html ${DOCKER_IMAGE}"
             }
         }
 
