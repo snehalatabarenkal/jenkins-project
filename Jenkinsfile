@@ -9,25 +9,23 @@ pipeline {
 
     stages {
 
-        stage("Workspace cleanup"){
-            steps{
-                script{
-                    cleanWs()
-                }
+        stage("Workspace cleanup") {
+            steps {
+                cleanWs()
             }
         }
 
         stage('Git: Code Checkout') {
             steps {
-                script{
-                    code_checkout("https://github.com/anjalikota10/jenkins-project.git","main")
+                script {
+                    code_checkout("https://github.com/anjalikota10/jenkins-project.git", "main")
                 }
             }
         }
 
-        stage("Trivy: Filesystem scan"){
-            steps{
-                script{
+        stage("Trivy: Filesystem scan") {
+            steps {
+                script {
                     trivy_scan()
                 }
             }
@@ -96,16 +94,14 @@ pipeline {
                 }
             }
         }
+    }
 
-        post {
+    post {
         always {
             archiveArtifacts artifacts: 'image-report.html', fingerprint: true
         }
         failure {
             echo 'Pipeline failed. Please check the logs.'
-               }
-           }
         }
-     }
-  }
+    }
 }
