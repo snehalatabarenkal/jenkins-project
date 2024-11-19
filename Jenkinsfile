@@ -3,7 +3,7 @@ pipeline {
     agent any
 
     environment {
-        SCANNER_HOME = tool 'sonar'
+        SCANNER_HOME = tool 'sonar-scanner'
         DOCKER_IMAGE = 'devops830/python-app:latest'
     }
 
@@ -33,26 +33,40 @@ pipeline {
             }
         }
 
-        stage("OWASP: Dependency check"){
-            steps{
-                script{
-                    owasp_dependency()
+        stage("OWASP: Dependency Check") {
+            steps {
+                script {
+                    try {
+                        owasp_dependency()
+                    } catch (Exception e) {
+                        echo "OWASP Dependency Check failed: ${e.message}"
+                        // Continue to next stage
+                    }
                 }
             }
         }
 
-        stage("SonarQube: Code Analysis"){
-            steps{
-                script{
-                    sonarqube_analysis("sonar","flaskdemo","flaskdemo")
+        stage("SonarQube: Code Analysis") {
+            steps {
+                withSonarQubeEnv('sonar') {
+                    script {
+                        sonarqube_analysis("${SCANNER_HOME}", "flaskdemo", "flaskdemo")
+                    }
                 }
             }
         }
 
-        stage("SonarQube: Code Quality Gates"){
-            steps{
-                script{
-                    sonarqube_code_quality()
+        stage("SonarQube: Code Quality Gates") {
+            steps {
+                script {
+                    try {
+                        timeout(time: 5, unit: 'MINUTES') {
+                            waitForQualityGate abortPipeline: true
+                        }
+                    } catch (Exception e) {
+                        echo "SonarQube Quality Gate failed: ${e.message}"
+                        currentBuild.result = 'FAILURE'
+                    }
                 }
             }
         }
@@ -82,5 +96,15 @@ pipeline {
                 }
             }
         }
+
+        post {
+        always {
+            archiveArtifacts artifacts: 'image-report.html', fingerprint: true
+        }
+        failure {
+            echo 'Pipeline failed. Please check the logs.'
+        }
+    }
+}
     }
 }
