@@ -35,10 +35,10 @@ pipeline {
             steps {
                 script {
                     try {
+                        env.OWASP_DC_NVD_API_KEY = 'f12ed65b-c318-4cae-8ff3-5ae529ec38da' // Replace with actual NVD API Key
                         owasp_dependency()
                     } catch (Exception e) {
                         echo "OWASP Dependency Check failed: ${e.message}"
-                        // Continue to next stage
                     }
                 }
             }
