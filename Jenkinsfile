@@ -5,6 +5,7 @@ pipeline {
     environment {
         SCANNER_HOME = tool 'sonar-scanner'
         DOCKER_IMAGE = 'devops830/python-app:latest'
+        OWASP_DC_NVD_API_KEY = credentials('owasp-api-key')
     }
 
     stages {
@@ -35,8 +36,7 @@ pipeline {
             steps {
                 script {
                     try {
-                        env.OWASP_DC_NVD_API_KEY = 'f12ed65b-c318-4cae-8ff3-5ae529ec38da'
-                        owasp_dependency()
+                        owasp_dependency("${OWASP_DC_NVD_API_KEY}")
                     } catch (Exception e) {
                         echo "OWASP Dependency Check failed: ${e.message}"
                     }
