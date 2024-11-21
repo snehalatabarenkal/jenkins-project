@@ -4,7 +4,6 @@ pipeline {
 
     environment {
         SCANNER_HOME = tool 'sonar-scanner'
-        DOCKER_IMAGE = 'devops830/python-app:latest'
         OWASP_DC_NVD_API_KEY = credentials('owasp-api-key')
     }
 
@@ -73,7 +72,7 @@ pipeline {
             steps {
                 script {
                     withDockerRegistry(credentialsId: 'dockerhub', toolName: 'docker') {
-                        sh "docker build -t ${DOCKER_IMAGE} ."
+                        sh "docker build -t devops830/python-app:latest ."
                     }
                 }
             }
@@ -81,7 +80,7 @@ pipeline {
 
         stage('Scan Docker Image by Trivy') {
             steps {
-                sh "trivy image --format table -o image-report.html ${DOCKER_IMAGE}"
+                sh "trivy image --format table -o image-report.html devops830/python-app:latest"
             }
         }
 
@@ -89,7 +88,7 @@ pipeline {
             steps {
                 script {
                     withDockerRegistry(credentialsId: 'dockerhub', toolName: 'docker') {
-                        sh "docker push ${DOCKER_IMAGE}"
+                        sh "docker push devops830/python-app:latest"
                     }
                 }
             }
