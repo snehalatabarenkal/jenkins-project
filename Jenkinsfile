@@ -1,6 +1,6 @@
 pipeline {
     agent any
-    tools{
+    tools {
         nodejs 'node16'
     }
 
@@ -11,25 +11,28 @@ pipeline {
 
     stages {
 
-        stage("Workspace cleanup"){
-            steps{
-                script{
+        stage("Workspace cleanup") {
+            steps {
+                script {
                     cleanWs()
                 }
             }
         }
 
-        stage('Checkout from Git'){
-            steps{
+        stage('Checkout from Git') {
+            steps {
                 git branch: 'main', url: 'https://github.com/anjalikota10/jenkins-project.git'
             }
         }
 
-        stage("Sonarqube Analysis "){
-            steps{
+        stage("Sonarqube Analysis") {
+            steps {
                 withSonarQubeEnv('sonar-server') {
-                    sh ''' $SCANNER_HOME/bin/sonar-scanner -Dsonar.projectName=flaskdemo \
-                    -Dsonar.projectKey=flaskdemo '''
+                    sh '''
+                        $SCANNER_HOME/bin/sonar-scanner \
+                        -Dsonar.projectName=flaskdemo \
+                        -Dsonar.projectKey=flaskdemo
+                    '''
                 }
             }
         }
@@ -43,11 +46,11 @@ pipeline {
         stage('OWASP FS SCAN') {
             steps {
                 script {
-            withCredentials([string(credentialsId: 'OWASP_DC_NVD_API_KEY', variable: 'API_KEY')]) {
-                owasp_dependency(API_KEY)
-            }
-                dependencyCheck additionalArguments: '--scan ./ --disableYarnAudit --disableNodeAudit', odcInstallation: 'DP-Check'
-                dependencyCheckPublisher pattern: '**/dependency-check-report.xml'
+                    withCredentials([string(credentialsId: 'owasp-api-key', variable: 'API_KEY')]) {
+                        dependencyCheck additionalArguments: '--scan ./ --disableYarnAudit --disableNodeAudit', odcInstallation: 'DP-Check'
+                        dependencyCheckPublisher pattern: '**/dependency-check-report.xml'
+                    }
+                }
             }
         }
 
@@ -56,7 +59,6 @@ pipeline {
                 sh "trivy fs . > trivyfs.txt"
             }
         }
-
 
         stage('Build & Tag Docker Image') {
             steps {
@@ -68,9 +70,9 @@ pipeline {
             }
         }
 
-        stage("TRIVY"){
-            steps{
-                sh "trivy image devops830/python-app:latest > trivyimage.txt" 
+        stage("TRIVY") {
+            steps {
+                sh "trivy image devops830/python-app:latest > trivyimage.txt"
             }
         }
 
@@ -84,12 +86,12 @@ pipeline {
             }
         }
 
-        stage("quality gate"){
-           steps {
+        stage("Quality Gate") {
+            steps {
                 script {
-                    waitForQualityGate abortPipeline: true, credentialsId: 'sonar-token' 
+                    waitForQualityGate abortPipeline: true
                 }
-            } 
+            }
         }
     }
 }
