@@ -1,72 +1,62 @@
-@Library('shared') _
 pipeline {
     agent any
 
     environment {
-        SCANNER_HOME = tool 'sonar-scanner'
-        OWASP_DC_NVD_API_KEY = credentials('owasp-api-key')
+        SCANNER_HOME = tool 'sonar'
     }
 
     stages {
 
-        stage("Workspace cleanup") {
-            steps {
-                cleanWs()
+        stage("Workspace cleanup"){
+            steps{
+                script{
+                    cleanWs()
+                }
             }
         }
 
-        stage('Git: Code Checkout') {
-            steps {
+        stage('Checkout from Git'){
+            steps{
+                git branch: 'main', url: 'https://github.com/anjalikota10/jenkins-project.git'
+            }
+        }
+
+        stage("Sonarqube Analysis "){
+            steps{
+                withSonarQubeEnv('sonar-server') {
+                    sh ''' $SCANNER_HOME/bin/sonar-scanner -Dsonar.projectName=flaskdemo \
+                    -Dsonar.projectKey=flaskdemo '''
+                }
+            }
+        }
+
+        stage("quality gate"){
+           steps {
                 script {
-                    code_checkout("https://github.com/anjalikota10/jenkins-project.git", "main")
+                    waitForQualityGate abortPipeline: true, credentialsId: 'sonar-token' 
                 }
+            } 
+        }
+
+        stage('Install Dependencies') {
+            steps {
+                sh "npm install"
             }
         }
 
-        stage("Trivy: Filesystem scan") {
+        stage('OWASP FS SCAN') {
             steps {
-                script {
-                    trivy_scan()
-                }
+                dependencyCheck additionalArguments: '--scan ./ --disableYarnAudit --disableNodeAudit', odcInstallation: 'DP-Check'
+                dependencyCheckPublisher pattern: '**/dependency-check-report.xml'
             }
         }
 
-        stage("OWASP: Dependency Check") {
+        stage('TRIVY FS SCAN') {
             steps {
-                script {
-                    try {
-                        owasp_dependency("${OWASP_DC_NVD_API_KEY}")
-                    } catch (Exception e) {
-                        echo "OWASP Dependency Check failed: ${e.message}"
-                    }
-                }
+                sh "trivy fs . > trivyfs.txt"
             }
         }
 
-        stage("SonarQube: Code Analysis") {
-            steps {
-                withSonarQubeEnv('sonar') {
-                    script {
-                        sonarqube_analysis("${SCANNER_HOME}", "flaskdemo", "flaskdemo")
-                    }
-                }
-            }
-        }
-
-        stage("SonarQube: Code Quality Gates") {
-            steps {
-                script {
-                    try {
-                        timeout(time: 5, unit: 'MINUTES') {
-                            waitForQualityGate abortPipeline: true
-                        }
-                    } catch (Exception e) {
-                        echo "SonarQube Quality Gate failed: ${e.message}"
-                        currentBuild.result = 'FAILURE'
-                    }
-                }
-            }
-        }
 
         stage('Build & Tag Docker Image') {
             steps {
@@ -78,9 +68,9 @@ pipeline {
             }
         }
 
-        stage('Scan Docker Image by Trivy') {
-            steps {
-                sh "trivy image --format table -o image-report.html devops830/python-app:latest"
+        stage("TRIVY"){
+            steps{
+                sh "trivy image devops830/python-app:latest > trivyimage.txt" 
             }
         }
 
@@ -92,15 +82,6 @@ pipeline {
                     }
                 }
             }
-        }
-    }
-
-    post {
-        always {
-            archiveArtifacts artifacts: 'image-report.html', fingerprint: true
-        }
-        failure {
-            echo 'Pipeline failed. Please check the logs.'
         }
     }
 }
