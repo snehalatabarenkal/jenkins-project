@@ -6,6 +6,7 @@ pipeline {
 
     environment {
         SCANNER_HOME = tool 'sonar-scanner'
+        OWASP_DC_NVD_API_KEY = credentials('owasp-api-key')
     }
 
     stages {
@@ -41,6 +42,10 @@ pipeline {
 
         stage('OWASP FS SCAN') {
             steps {
+                script {
+            withCredentials([string(credentialsId: 'OWASP_DC_NVD_API_KEY', variable: 'API_KEY')]) {
+                owasp_dependency(API_KEY)
+            }
                 dependencyCheck additionalArguments: '--scan ./ --disableYarnAudit --disableNodeAudit', odcInstallation: 'DP-Check'
                 dependencyCheckPublisher pattern: '**/dependency-check-report.xml'
             }
