@@ -54,18 +54,24 @@ def portfolio():
             <div class="container">
                 <div class="about">
                     <h2>About Me</h2>
-                    <p>I am a DevOps engineer with a passion for cloud infrastructure, CI/CD, and automation. With a background in software development, I bring a unique perspective to building efficient and reliable systems.</p>
+                    <p>Dynamic and detail-oriented DevOps Engineer with 2 years of experience specializing in CI/CD pipelines, infrastructure automation, and monitoring solutions.<br>
+                       Hands-on expertise with tools like Docker, Kubernetes, Ansible, Terraform, and cloud services such as AWS EC2, EKS, and RDS. Proficient in designing scalable infrastructure,<br> 
+                       streamlining deployments, and implementing monitoring solutions to ensure high availability and reliability of applications.</p>
                 </div>
                 
                 <div class="projects">
                     <h2>Projects</h2>
                     <div class="project-item">
-                        <p class="project-title">Project 1: DevOps Pipeline</p>
-                        <p>Created a Jenkins pipeline that integrates with SonarQube, OWASP Dependency Check, and Docker to automate the build and security scanning process.</p>
-                    </div>
-                    <div class="project-item">
-                        <p class="project-title">Project 2: E-commerce Website</p>
-                        <p>Developed a full-stack e-commerce platform using Flask, MySQL, and Docker, deployed on AWS.</p>
+                        <p class="project-title">Project 1: End-to-End Deployment of a Three-Tier Application on AWS EKS Cluster using GitOps</p>
+                        <p>Objective: Led the deployment of a three-tier application on AWS EKS, utilizing GitOps with ArgoCD to automate and streamline the delivery process.</p>
+                        <p><b>Key Achievements:</b></p>
+                        <ul>
+                            <li>Infrastructure Automation: Reduced setup time by 30% using Terraform for AWS provisioning.</li>
+                            <li>CI/CD Pipeline: Achieved a 95% deployment success rate with zero downtime by implementing a Jenkins-driven CI/CD pipeline.</li>
+                            <li>GitOps Integration: Cut manual intervention by 80% through ArgoCD integration, ensuring seamless synchronization between GitHub and EKS.</li>
+                            <li>Monitoring Setup: Improved issue detection time by 40% with Prometheus and Grafana, enabling faster response to critical alerts.</li>
+                        </ul>
+                        <p><b>Impact:</b> Delivered a 99.9% deployment success rate, improved scalability, and reduced manual efforts by 90%, significantly enhancing operational efficiency and system reliability.</p>
                     </div>
                 </div>
                 
