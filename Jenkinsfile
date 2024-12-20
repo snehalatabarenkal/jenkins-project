@@ -1,97 +1,43 @@
 pipeline {
     agent any
-    tools {
-        nodejs 'node16'
-    }
-
-    environment {
-        SCANNER_HOME = tool 'sonar-scanner'
-        OWASP_DC_NVD_API_KEY = credentials('owasp-api-key')
-    }
 
     stages {
-
-        stage("Workspace cleanup") {
+        stage('Git Checkout') {
             steps {
-                script {
-                    cleanWs()
-                }
+                git branch: 'main', url: 'https://github.com/anjalikota10/Blogging-app.git'
             }
         }
 
-        stage('Checkout from Git') {
+
+        stage('Trivy FS Scan') {
             steps {
-                git branch: 'main', url: 'https://github.com/anjalikota10/jenkins-project.git'
+                sh 'trivy fs --format table -o fs-report.html .'
             }
         }
-
-        stage("Sonarqube Analysis") {
-            steps {
-                withSonarQubeEnv('sonar-server') {
-                    sh '''
-                        $SCANNER_HOME/bin/sonar-scanner \
-                        -Dsonar.projectName=flaskdemo \
-                        -Dsonar.projectKey=flaskdemo
-                    '''
-                }
-            }
-        }
-
-        stage('Install Dependencies') {
-            steps {
-                sh "npm install"
-            }
-        }
-
-        stage('OWASP FS SCAN') {
-            steps {
-                script {
-                    withCredentials([string(credentialsId: 'owasp-api-key', variable: 'API_KEY')]) {
-                        dependencyCheck additionalArguments: '--scan ./ --disableYarnAudit --disableNodeAudit', odcInstallation: 'DP-Check'
-                        dependencyCheckPublisher pattern: '**/dependency-check-report.xml'
-                    }
-                }
-            }
-        }
-
-        stage('TRIVY FS SCAN') {
-            steps {
-                sh "trivy fs . > trivyfs.txt"
-            }
-        }
-
+        
         stage('Build & Tag Docker Image') {
             steps {
                 script {
                     withDockerRegistry(credentialsId: 'dockerhub', toolName: 'docker') {
-                        sh "docker build -t devops830/python-app:latest ."
+                        sh 'docker build -t devops830/python-app:latest .'
                     }
                 }
             }
         }
 
-        stage("TRIVY") {
+        stage('Scan Docker Image by Trivy') {
             steps {
-                sh "trivy image devops830/python-app:latest > trivyimage.txt"
+                sh 'trivy image --format table -o image-report.html devops830/python-app:latest'
             }
         }
 
-        stage('Push Docker Image to Private Repo') {
+        stage('Push Docker Image') {
             steps {
                 script {
                     withDockerRegistry(credentialsId: 'dockerhub', toolName: 'docker') {
-                        sh "docker push devops830/python-app:latest"
+                        sh 'docker push devops830/python-app:latest'
                     }
                 }
             }
         }
-
-        stage("Quality Gate") {
-            steps {
-                script {
-                    waitForQualityGate abortPipeline: true
-                }
-            }
-        }
-    }
-}
+    }docker
