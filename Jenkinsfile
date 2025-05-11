@@ -14,6 +14,15 @@ pipeline {
                 sh 'trivy fs --format table -o fs-report.html .'
             }
         }
+
+        stage('SonarQube Analysis') {
+            steps {
+                withSonarQubeEnv('sonar') {  
+                    sh ''' $SCANNER_HOME/bin/sonar-scanner -Dsonar.projectKey=flaskdemo \
+                    -Dsonar.projectName=flaskdemo -Dsonar.java.binaries=target '''
+                }    
+            }
+        }
         
         stage('Build & Tag Docker Image') {
             steps {
