@@ -16,8 +16,8 @@ spec:
       - name: flaskdemo
         image: devops830/python-app:latest
         imagePullPolicy: Always
-      imagePullSecrets:
-      - name: dockerhub-secret  # Reference to the Docker Hub secret
+     # imagePullSecrets:
+     # - name: dockerhub-secret  # Reference to the Docker Hub secret
 
 ---
 
