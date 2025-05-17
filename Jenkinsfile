@@ -21,7 +21,7 @@ environment {
 
         stage('SonarQube Analysis') {
             steps {
-                withSonarQubeEnv('sonar') {  
+                withSonarQubeEnv('sonar-scan') {  
                     sh ''' $SCANNER_HOME/bin/sonar-scanner -Dsonar.projectKey=flaskdemo \
                     -Dsonar.projectName=flaskdemo -Dsonar.java.binaries=target '''
                 }    
