@@ -1,8 +1,8 @@
 pipeline {
     agent any
-    
-environment {
-        SCANNER_HOME= tool 'sonar-scan'
+
+    environment {
+        SCANNER_HOME = tool 'sonar-scanner'
     }
 
     stages {
@@ -12,7 +12,6 @@ environment {
             }
         }
 
-
         stage('Trivy FS Scan') {
             steps {
                 sh 'trivy fs --format table -o fs-report.html .'
@@ -21,18 +20,20 @@ environment {
 
         stage('SonarQube Analysis') {
             steps {
-                withSonarQubeEnv('sonar-scan') {  
-                    sh ''' $SCANNER_HOME/bin/sonar-scanner -Dsonar.projectKey=flaskdemo \
-                    -Dsonar.projectName=flaskdemo -Dsonar.java.binaries=target '''
-                }    
+                withSonarQubeEnv('SonarQube') {
+                    sh '''${SCANNER_HOME}/bin/sonar-scanner \
+                    -Dsonar.projectKey=flaskdemo \
+                    -Dsonar.projectName=flaskdemo \
+                    -Dsonar.sources=.'''
+                }
             }
         }
-        
+
         stage('Build & Tag Docker Image') {
             steps {
                 script {
                     withDockerRegistry(credentialsId: 'dockerhub', toolName: 'docker') {
-                        sh 'docker build -t devops830/python-app:latest .'
+                        sh 'docker build -t satishchippabob/python-app:latest .'
                     }
                 }
             }
@@ -40,7 +41,7 @@ environment {
 
         stage('Scan Docker Image by Trivy') {
             steps {
-                sh 'trivy image --format table -o image-report.html devops830/python-app:latest'
+                sh 'trivy image --format table -o image-report.html satishchippabob/python-app:latest'
             }
         }
 
@@ -48,10 +49,16 @@ environment {
             steps {
                 script {
                     withDockerRegistry(credentialsId: 'dockerhub', toolName: 'docker') {
-                        sh 'docker push devops830/python-app:latest'
+                        sh 'docker push satishchippabob/python-app:latest'
                     }
                 }
             }
+        }
+    }
+
+    post {
+        always {
+            archiveArtifacts artifacts: '*.html', allowEmptyArchive: true
         }
     }
 }
