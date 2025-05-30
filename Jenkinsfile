@@ -20,7 +20,7 @@ pipeline {
 
         stage('SonarQube Analysis') {
             steps {
-                withSonarQubeEnv('sonar-scanner') {
+                withSonarQubeEnv('sonar') {
                     sh '''${SCANNER_HOME}/bin/sonar-scanner \
                     -Dsonar.projectKey=flaskdemo \
                     -Dsonar.projectName=flaskdemo \
