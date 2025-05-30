@@ -41,7 +41,7 @@ pipeline {
 
         stage('Scan Docker Image by Trivy') {
             steps {
-                sh 'trivy image --format table -o image-report.html satishchippabob/python-app:latest'
+                sh 'trivy image --format table -o image-report.html snehalatabarenkal/python-app:latest'
             }
         }
 
