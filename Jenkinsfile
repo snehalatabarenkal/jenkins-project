@@ -1,5 +1,5 @@
 pipeline {
-    agent any
+    agent { label 'new' }
 
     environment {
         SCANNER_HOME = tool 'sonar-scanner'
