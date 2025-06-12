@@ -16,8 +16,8 @@ spec:
       - name: flaskdemo
         image: snehalatabarenkal/python-app:latest1
         imagePullPolicy: Always
-     # imagePullSecrets:
-      #- name: dockerhub-secret
+      imagePullSecrets:
+      - name: dockerhub-secret
 ---
 apiVersion: v1
 kind: Service
